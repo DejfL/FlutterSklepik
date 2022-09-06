@@ -28,6 +28,10 @@ class MyApp extends StatelessWidget {
             color: primaryColor.withOpacity(0.5),
             fontSize: 25,
           ),
+          subtitle1: const TextStyle(
+            color: primaryColor,
+            fontSize: 14,
+          ),
         ),
         primarySwatch: createMaterialColor(
           primaryColor,

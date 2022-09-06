@@ -3,6 +3,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import 'package:sklepik/const.dart';
 import 'package:sklepik/helpers/screenState.dart';
+import 'package:sklepik/models/product.dart';
 import 'package:sklepik/providers/productProvider.dart';
 import 'package:sklepik/widgets/somethingWentWrong.dart';
 import 'package:sklepik/widgets/textFormField.dart';
@@ -108,50 +109,114 @@ class Products extends StatelessWidget {
         crossAxisSpacing: 8,
         itemCount: products.length,
         itemBuilder: (context, index) {
-          final double height = index % 3 == 1 ? 250 : 300;
-          return SizedBox(
-            height: height,
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    height: height * 0.3,
-                    decoration: const BoxDecoration(
-                      color: greyColor,
-                      borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(20),
-                        bottomLeft: Radius.circular(20),
-                      ),
-                    ),
-                    // child: Padding(
-                    //   padding: const EdgeInsets.only(top: 20),
-                    //   child: Column(children: [
-                    //     Text(
-                    //       products[index].title,
-                    //     ),
-                    //   ]),
-                    // ),
-                  ),
-                ),
-                Container(
-                  height: height * 0.77,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(20),
-                    ),
-                    image: DecorationImage(
-                      image: NetworkImage(
-                        products[index].image,
-                      ),
-                      fit: BoxFit.fill,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
+          final double height = index % 3 == 1 ? 250 : 280;
+          return ProductItem(height: height, product: products[index]);
         },
+      ),
+    );
+  }
+}
+
+class ProductItem extends StatelessWidget {
+  const ProductItem({
+    Key? key,
+    required this.height,
+    required this.product,
+  }) : super(key: key);
+
+  final double height;
+  final Product product;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: height * 0.25,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: greyColor,
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryColor,
+                    blurRadius: 10,
+                    offset: Offset(0.0, 3),
+                  )
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 8,
+                  top: 20,
+                  right: 8,
+                  bottom: 2,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        product.title,
+                        style: Theme.of(context).textTheme.subtitle1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Container(
+            height: height * 0.8,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(
+                Radius.circular(20),
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: primaryColor,
+                  blurRadius: 8,
+                  offset: Offset(0.0, 3),
+                )
+              ],
+              image: DecorationImage(
+                image: NetworkImage(
+                  product.thumbnail,
+                ),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 10,
+            top: 10,
+            child: InkWell(
+              onTap: () {},
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(20),
+                ),
+                child: Container(
+                  color: primaryColor,
+                  child: const Padding(
+                    padding: EdgeInsets.all(6),
+                    child: Icon(
+                      Icons.favorite_border,
+                      color: greyColor,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

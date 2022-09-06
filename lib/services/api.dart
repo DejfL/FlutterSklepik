@@ -40,5 +40,5 @@ Future<Response> apiDeleteRequest(String link) async {
 }
 
 String _getApiLink(String link) {
-  return 'https://fakestoreapi.com/' + link;
+  return 'https://dummyjson.com/' + link;
 }
