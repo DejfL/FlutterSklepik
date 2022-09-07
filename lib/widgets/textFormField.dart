@@ -5,11 +5,13 @@ class MyTextFormField extends StatelessWidget {
   final TextEditingController textEditingController;
   final String hintText;
   final IconData? iconData;
+  final Function(String val)? onChanged;
 
   const MyTextFormField(
     this.textEditingController,
     this.hintText, {
     this.iconData,
+    this.onChanged,
     Key? key,
   }) : super(key: key);
 
@@ -17,6 +19,7 @@ class MyTextFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: textEditingController,
+      onChanged: onChanged,
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: iconData != null

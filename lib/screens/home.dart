@@ -5,6 +5,7 @@ import 'package:sklepik/const.dart';
 import 'package:sklepik/helpers/screenState.dart';
 import 'package:sklepik/models/product.dart';
 import 'package:sklepik/providers/productProvider.dart';
+import 'package:sklepik/widgets/bottomNavigationBar.dart';
 import 'package:sklepik/widgets/somethingWentWrong.dart';
 import 'package:sklepik/widgets/textFormField.dart';
 
@@ -17,15 +18,22 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => ProductProvider(),
-      child: Scaffold(
-        body: SafeArea(
-          child: Column(
+      create: (_) => ProductProvider(),
+      builder: (context, _) {
+        void _searchProduct(String val) {
+          Provider.of<ProductProvider>(context, listen: false).searchText = val;
+        }
+
+        return Scaffold(
+          body: Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    const SizedBox(
+                      height: 20,
+                    ),
                     top(context),
                     const SizedBox(
                       height: 10,
@@ -34,6 +42,7 @@ class HomeScreen extends StatelessWidget {
                       searchEditingController,
                       'Search Product',
                       iconData: Icons.search,
+                      onChanged: _searchProduct,
                     ),
                   ],
                 ),
@@ -41,8 +50,10 @@ class HomeScreen extends StatelessWidget {
               const Products(),
             ],
           ),
-        ),
-      ),
+          extendBody: true,
+          bottomNavigationBar: const MyBottomNavigationBar(),
+        );
+      },
     );
   }
 
@@ -87,7 +98,7 @@ class Products extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productProvider = context.watch<ProductProvider>();
-    final products = productProvider.products;
+    final products = productProvider.products();
 
     if (productProvider.screenState == ScreenState.Loading) {
       return const Expanded(
@@ -103,7 +114,7 @@ class Products extends StatelessWidget {
 
     return Expanded(
       child: MasonryGridView.count(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(left: 16, top: 8, right: 16, bottom: 80),
         crossAxisCount: 2,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
