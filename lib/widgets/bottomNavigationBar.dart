@@ -20,7 +20,7 @@ class MyBottomNavigationBar extends StatelessWidget {
       items: [
         FloatingNavbarItem(icon: Icons.home, title: 'Home'),
         FloatingNavbarItem(icon: Icons.explore, title: 'Explore'),
-        FloatingNavbarItem(icon: Icons.shopping_cart, title: 'Chats'),
+        FloatingNavbarItem(icon: Icons.shopping_cart, title: 'Cart'),
         FloatingNavbarItem(icon: Icons.person, title: 'Account'),
       ],
     );

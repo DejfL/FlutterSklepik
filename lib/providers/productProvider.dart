@@ -5,11 +5,11 @@ import 'package:sklepik/services/api.dart';
 import '../helpers/screenState.dart';
 
 class ProductProvider extends ChangeNotifier {
+  ScreenState screenState = ScreenState.Initial;
+
   ProductProvider() {
     _getProducts();
   }
-
-  ScreenState screenState = ScreenState.Initial;
 
   List<Product> _products = [];
 

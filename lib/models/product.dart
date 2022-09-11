@@ -13,7 +13,7 @@ class Product {
   final int id;
   final String title;
   final String description;
-  final int price;
+  final double price;
   final double discountPercentage;
   final double rating;
   final int stock;
@@ -40,7 +40,7 @@ class Product {
         id: json["id"],
         title: json["title"],
         description: json["description"],
-        price: json["price"],
+        price: json["price"].toDouble(),
         discountPercentage: json["discountPercentage"].toDouble(),
         rating: json["rating"].toDouble(),
         stock: json["stock"],

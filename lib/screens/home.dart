@@ -1,10 +1,15 @@
+import 'dart:convert';
+import 'package:http/http.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import 'package:sklepik/const.dart';
 import 'package:sklepik/helpers/screenState.dart';
 import 'package:sklepik/models/product.dart';
+import 'package:sklepik/providers/cartProvider.dart';
 import 'package:sklepik/providers/productProvider.dart';
+import 'package:sklepik/services/api.dart';
 import 'package:sklepik/widgets/bottomNavigationBar.dart';
 import 'package:sklepik/widgets/somethingWentWrong.dart';
 import 'package:sklepik/widgets/textFormField.dart';
@@ -17,8 +22,15 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ProductProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(
+          value: ProductProvider(),
+        ),
+        ChangeNotifierProvider.value(
+          value: CartProvider(),
+        ),
+      ],
       builder: (context, _) {
         void _searchProduct(String val) {
           Provider.of<ProductProvider>(context, listen: false).searchText = val;
@@ -128,7 +140,7 @@ class Products extends StatelessWidget {
   }
 }
 
-class ProductItem extends StatelessWidget {
+class ProductItem extends StatefulWidget {
   const ProductItem({
     Key? key,
     required this.height,
@@ -139,77 +151,77 @@ class ProductItem extends StatelessWidget {
   final Product product;
 
   @override
+  State<ProductItem> createState() => _ProductItemState();
+}
+
+class _ProductItemState extends State<ProductItem> {
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: height,
+      height: widget.height,
       child: Stack(
         children: [
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: height * 0.25,
-              width: double.infinity,
-              decoration: const BoxDecoration(
+          _descriptionItem(context),
+          _imageItem(context),
+          _addToFavorite(),
+        ],
+      ),
+    );
+  }
+
+  Positioned _addToFavorite() {
+    return Positioned(
+      right: 10,
+      top: 10,
+      child: InkWell(
+        onTap: () {},
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(
+            Radius.circular(20),
+          ),
+          child: Container(
+            color: primaryColor,
+            child: const Padding(
+              padding: EdgeInsets.all(6),
+              child: Icon(
+                Icons.favorite_border,
                 color: greyColor,
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(20),
-                  bottomLeft: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor,
-                    blurRadius: 10,
-                    offset: Offset(0.0, 3),
-                  )
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: 8,
-                  top: 20,
-                  right: 8,
-                  bottom: 2,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        product.title,
-                        style: Theme.of(context).textTheme.subtitle1,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
-          Container(
-            height: height * 0.8,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(20),
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  color: primaryColor,
-                  blurRadius: 8,
-                  offset: Offset(0.0, 3),
-                )
-              ],
-              image: DecorationImage(
-                image: NetworkImage(
-                  product.thumbnail,
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
+        ),
+      ),
+    );
+  }
+
+  Container _imageItem(BuildContext context) {
+    return Container(
+      height: widget.height * 0.8,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(
+          Radius.circular(20),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: primaryColor,
+            blurRadius: 8,
+            offset: Offset(0.0, 3),
+          )
+        ],
+        image: DecorationImage(
+          image: NetworkImage(
+            widget.product.thumbnail,
           ),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Stack(
+        children: [
           Positioned(
             right: 10,
-            top: 10,
+            bottom: 10,
             child: InkWell(
-              onTap: () {},
+              onTap: () => _addToCart(context, widget.product),
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(
                   Radius.circular(20),
@@ -219,8 +231,8 @@ class ProductItem extends StatelessWidget {
                   child: const Padding(
                     padding: EdgeInsets.all(6),
                     child: Icon(
-                      Icons.favorite_border,
-                      color: greyColor,
+                      Icons.shopping_cart_outlined,
+                      color: goldColor,
                     ),
                   ),
                 ),
@@ -228,6 +240,79 @@ class ProductItem extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _addToCart(BuildContext context, Product product) async {
+    final Response response =
+        await Provider.of<CartProvider>(context, listen: false)
+            .addToCart(product);
+
+    if (!mounted) return;
+
+    if (response.statusCode == 200) {
+      Flushbar(
+        message: 'Added',
+        isDismissible: true,
+        duration: const Duration(seconds: 2),
+      ).show(context);
+    } else {
+      Flushbar(
+        message: 'Error',
+        isDismissible: true,
+        backgroundColor: Theme.of(context).errorColor,
+        duration: const Duration(seconds: 2),
+      ).show(context);
+    }
+  }
+
+  Align _descriptionItem(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: widget.height * 0.25,
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          color: greyColor,
+          borderRadius: BorderRadius.only(
+            bottomRight: Radius.circular(20),
+            bottomLeft: Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor,
+              blurRadius: 10,
+              offset: Offset(0.0, 3),
+            )
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: 8,
+            top: 20,
+            right: 8,
+            bottom: 2,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                child: Text(
+                  widget.product.title,
+                  style: Theme.of(context).textTheme.subtitle1,
+                ),
+              ),
+              const SizedBox(
+                height: 3,
+              ),
+              Text(
+                widget.product.price.toStringAsFixed(2),
+                style: Theme.of(context).textTheme.subtitle2,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
